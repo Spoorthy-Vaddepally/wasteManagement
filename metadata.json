@@ -1,0 +1,7 @@
+{
+  "name": "MIRIS",
+  "description": "MIRIS (Material In-Situ Recycling and Identification System) is an advanced waste management and recycling interface for spacecraft crews, featuring AI-powered scanning, detailed inventory tracking, and system monitoring.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
