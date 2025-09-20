@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSpacecraft } from '../hooks/useSpacecraft';
 import { WasteType } from '../types';
 import PageHeader from '../components/PageHeader';
@@ -126,119 +127,347 @@ const Scanner: React.FC = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Camera/Upload View */}
-        <div className="bg-space-mid border border-space-light rounded-lg p-4 flex flex-col items-center justify-center min-h-[400px]">
+        <motion.div 
+          className="bg-gradient-to-br from-space-mid/80 to-space-light/60 backdrop-blur-sm border border-accent-blue/30 rounded-xl p-4 flex flex-col items-center justify-center min-h-[400px] shadow-hologram relative overflow-hidden"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          whileHover={{ boxShadow: "0 20px 40px rgba(0, 191, 255, 0.2)" }}
+        >
+          {/* Animated border glow */}
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent-blue/20 via-accent-purple/20 to-accent-blue/20 opacity-50 blur-sm" />
+          
           {webcamEnabled ? (
-            <div className="w-full h-full relative">
-              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-md" />
-              {isScanning && (
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-t-neon-cyan border-gray-600 rounded-full animate-spin"></div>
-                  <p className="mt-4 text-white">Scanning...</p>
-                </div>
-              )}
-            </div>
+            <motion.div 
+              className="w-full h-full relative z-10"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-lg border border-accent-blue/50 shadow-lg" />
+              <AnimatePresence>
+                {isScanning && (
+                  <motion.div 
+                    className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div 
+                      className="w-16 h-16 border-4 border-t-neon-cyan border-gray-600 rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      style={{
+                        boxShadow: "0 0 20px rgba(0, 245, 255, 0.5)"
+                      }}
+                    />
+                    <motion.p 
+                      className="mt-4 text-white font-semibold"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      Scanning...
+                    </motion.p>
+                    
+                    {/* Scanning line effect */}
+                    <motion.div
+                      className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-cyan to-transparent"
+                      animate={{ y: [0, 300, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ) : (
-            <div className="text-center text-gray-400">
-              <p className="mb-4 text-accent-yellow">{webcamError || "Initializing Webcam..."}</p>
-              <label className="cursor-pointer bg-accent-blue hover:bg-blue-400 text-white font-bold py-2 px-4 rounded transition">
+            <motion.div 
+              className="text-center text-gray-300 z-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <motion.p 
+                className="mb-4 text-accent-orange"
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {webcamError || "Initializing Webcam..."}
+              </motion.p>
+              <motion.label 
+                className="cursor-pointer bg-gradient-to-r from-accent-blue to-neon-purple hover:from-neon-purple hover:to-accent-blue text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-neon-blue inline-block mb-4"
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(0, 191, 255, 0.4)" }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <span>Upload Waste Photo</span>
                 <input type="file" className="hidden" onChange={handleFileChange} accept="image/*"/>
-              </label>
-               <button onClick={() => setShowManual(true)} className="mt-4 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition">
+              </motion.label>
+              <br />
+              <motion.button 
+                onClick={() => setShowManual(true)} 
+                className="bg-gradient-to-r from-space-light to-space-mid hover:from-space-mid hover:to-space-light text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 border border-accent-blue/30"
+                whileHover={{ scale: 1.05, boxShadow: "0 5px 20px rgba(0, 191, 255, 0.2)" }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Or Classify Manually
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           )}
           {webcamEnabled && (
-            <button
+            <motion.button
               onClick={scan}
               disabled={isScanning || !!result}
-              className="mt-4 w-full bg-neon-cyan hover:bg-cyan-400 disabled:bg-gray-600 text-space-dark font-bold py-3 px-4 rounded-lg text-lg transition"
+              className="mt-4 w-full bg-gradient-to-r from-neon-cyan to-accent-blue hover:from-accent-blue hover:to-neon-purple disabled:from-gray-600 disabled:to-gray-700 text-space-dark disabled:text-gray-400 font-bold py-3 px-4 rounded-lg text-lg transition-all duration-300 shadow-neon-blue relative z-10 overflow-hidden"
+              whileHover={{ scale: isScanning || result ? 1 : 1.02 }}
+              whileTap={{ scale: isScanning || result ? 1 : 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
             >
+              {/* Animated background effect */}
+              <div className="absolute inset-0 bg-energy-flow bg-[length:200%_100%] animate-energyFlow opacity-30" />
+              <span className="relative z-10">
               Scan Item
-            </button>
+              </span>
+            </motion.button>
           )}
-        </div>
+        </motion.div>
 
         {/* Results/Manual Entry View */}
-        <div className="bg-space-mid border border-space-light rounded-lg p-6 flex flex-col justify-center">
-          {error && (
-             <div className="text-center">
-                <p className="text-accent-red mb-4">{error}</p>
-                <button onClick={() => { reset(); setShowManual(true); }} className="bg-accent-yellow text-space-dark font-bold py-2 px-4 rounded transition">
+        <motion.div 
+          className="bg-gradient-to-br from-space-mid/80 to-space-light/60 backdrop-blur-sm border border-accent-blue/30 rounded-xl p-6 flex flex-col justify-center shadow-hologram relative overflow-hidden"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          whileHover={{ boxShadow: "0 20px 40px rgba(0, 191, 255, 0.2)" }}
+        >
+          {/* Animated border glow */}
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-accent-purple/20 via-accent-blue/20 to-accent-purple/20 opacity-50 blur-sm" />
+          
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div 
+                className="text-center z-10"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.4 }}
+              >
+                <motion.p 
+                  className="text-accent-orange mb-4 font-semibold"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  {error}
+                </motion.p>
+                <motion.button 
+                  onClick={() => { reset(); setShowManual(true); }} 
+                  className="bg-gradient-to-r from-accent-orange to-neon-orange hover:from-neon-orange hover:to-accent-orange text-space-dark font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-neon-orange"
+                  whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(255, 69, 0, 0.4)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
                     Classify Manually
-                </button>
-             </div>
-          )}
+                </motion.button>
+              </motion.div>
+            )}
 
-          {result && !error && (
-            <div className="animate-fadeIn">
-              <h3 className="text-2xl font-bold mb-4 text-white">Detection Result</h3>
-              <div className="mb-4">
+            {result && !error && (
+              <motion.div 
+                className="z-10"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <motion.h3 
+                  className="text-2xl font-bold mb-4 text-white flex items-center"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  <motion.span 
+                    className="w-3 h-3 bg-neon-green rounded-full mr-3"
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  Detection Result
+                </motion.h3>
+                <motion.div 
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
                 <p className="text-gray-400">Detected Category</p>
-                <p className="text-3xl font-bold text-neon-cyan">{result.type}</p>
-              </div>
-              <div className="mb-6">
+                <motion.p 
+                  className="text-3xl font-bold text-neon-cyan"
+                  animate={{ 
+                    textShadow: [
+                      "0 0 10px rgba(0, 245, 255, 0.5)",
+                      "0 0 20px rgba(0, 245, 255, 0.8)",
+                      "0 0 10px rgba(0, 245, 255, 0.5)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  {result.type}
+                </motion.p>
+              </motion.div>
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+              >
                 <p className="text-gray-400">Confidence</p>
-                <div className="w-full bg-space-light rounded-full h-4">
-                  <div
-                    className="bg-neon-green h-4 rounded-full"
-                    style={{ width: `${result.confidence * 100}%` }}
-                  ></div>
+                <div className="w-full bg-space-light/50 rounded-full h-4 overflow-hidden relative">
+                  <motion.div
+                    className="bg-gradient-to-r from-neon-green to-accent-blue h-4 rounded-full relative"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${result.confidence * 100}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                    style={{
+                      boxShadow: "0 0 10px rgba(57, 255, 20, 0.5)"
+                    }}
+                  >
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 bg-energy-flow bg-[length:200%_100%] animate-energyFlow opacity-50" />
+                  </motion.div>
                 </div>
-                <p className="text-right text-lg font-semibold">{(result.confidence * 100).toFixed(1)}%</p>
-              </div>
+                <motion.p 
+                  className="text-right text-lg font-semibold text-white mt-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 1.0 }}
+                >
+                  {(result.confidence * 100).toFixed(1)}%
+                </motion.p>
+              </motion.div>
               
-              <div className="mb-6">
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+              >
                 <label htmlFor="override" className="block text-gray-400 mb-2">Manual Override (if incorrect)</label>
                 <select 
                   id="override" 
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value as WasteType)}
-                  className="w-full bg-space-light border border-gray-600 rounded-lg p-3 text-white focus:ring-accent-blue focus:border-accent-blue"
+                  className="w-full bg-gradient-to-r from-space-light/80 to-space-mid/60 border border-accent-blue/30 rounded-lg p-3 text-white focus:ring-2 focus:ring-accent-blue focus:border-accent-blue transition-all duration-300 backdrop-blur-sm"
                 >
                   {Object.values(WasteType).map(type => (
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
 
-              <div className="flex space-x-4">
-                <button onClick={handleConfirm} className="flex-1 bg-neon-green hover:bg-green-400 text-space-dark font-bold py-3 px-4 rounded-lg text-lg transition">✅ Confirm</button>
-                <button onClick={reset} className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg text-lg transition">🔄 Retake</button>
-              </div>
-            </div>
-          )}
+              <motion.div 
+                className="flex space-x-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.7 }}
+              >
+                <motion.button 
+                  onClick={handleConfirm} 
+                  className="flex-1 bg-gradient-to-r from-neon-green to-accent-blue hover:from-accent-blue hover:to-neon-green text-space-dark font-bold py-3 px-4 rounded-lg text-lg transition-all duration-300 shadow-lg relative overflow-hidden"
+                  whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(57, 255, 20, 0.4)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="absolute inset-0 bg-energy-flow bg-[length:200%_100%] animate-energyFlow opacity-30" />
+                  <span className="relative z-10">✅ Confirm</span>
+                </motion.button>
+                <motion.button 
+                  onClick={reset} 
+                  className="flex-1 bg-gradient-to-r from-space-light to-space-mid hover:from-space-mid hover:to-space-light text-white font-bold py-3 px-4 rounded-lg text-lg transition-all duration-300 border border-accent-blue/30"
+                  whileHover={{ scale: 1.02, boxShadow: "0 5px 20px rgba(0, 191, 255, 0.2)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🔄 Retake
+                </motion.button>
+              </motion.div>
+              </motion.div>
+            )}
 
-          {(!result && !error) || showManual ? (
-            <div className={showManual ? 'animate-fadeIn' : 'text-center text-gray-500'}>
+            {((!result && !error) || showManual) && (
+              <motion.div 
+                className={showManual ? 'z-10' : 'text-center text-gray-400 z-10'}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4 }}
+              >
               {showManual ? (
-                  <div>
-                      <h3 className="text-2xl font-bold mb-4 text-white">Manual Classification</h3>
-                       <select 
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  >
+                      <motion.h3 
+                        className="text-2xl font-bold mb-4 text-white flex items-center"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                      >
+                        <motion.span 
+                          className="w-3 h-3 bg-accent-orange rounded-full mr-3"
+                          animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        Manual Classification
+                      </motion.h3>
+                      <motion.select 
                           value={selectedType}
                           onChange={(e) => setSelectedType(e.target.value as WasteType)}
-                          className="w-full bg-space-light border border-gray-600 rounded-lg p-3 text-white focus:ring-accent-blue focus:border-accent-blue mb-4"
+                          className="w-full bg-gradient-to-r from-space-light/80 to-space-mid/60 border border-accent-blue/30 rounded-lg p-3 text-white focus:ring-2 focus:ring-accent-blue focus:border-accent-blue mb-4 transition-all duration-300 backdrop-blur-sm"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.3 }}
                         >
                           <option value="" disabled>Select waste type...</option>
                           {Object.values(WasteType).map(type => (
                             <option key={type} value={type}>{type}</option>
                           ))}
-                        </select>
-                        <button 
+                        </motion.select>
+                        <motion.button 
                             onClick={handleManualConfirm}
                             disabled={!selectedType}
-                            className="w-full bg-neon-green hover:bg-green-400 disabled:bg-gray-600 text-space-dark font-bold py-3 px-4 rounded-lg text-lg transition">
+                            className="w-full bg-gradient-to-r from-neon-green to-accent-blue hover:from-accent-blue hover:to-neon-green disabled:from-gray-600 disabled:to-gray-700 text-space-dark disabled:text-gray-400 font-bold py-3 px-4 rounded-lg text-lg transition-all duration-300 shadow-lg mb-2 relative overflow-hidden"
+                            whileHover={{ scale: selectedType ? 1.02 : 1, boxShadow: selectedType ? "0 10px 30px rgba(57, 255, 20, 0.4)" : "none" }}
+                            whileTap={{ scale: selectedType ? 0.98 : 1 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.4 }}
+                        >
+                            {selectedType && <div className="absolute inset-0 bg-energy-flow bg-[length:200%_100%] animate-energyFlow opacity-30" />}
+                            <span className="relative z-10">
                             Log Item
-                        </button>
-                        <button onClick={() => setShowManual(false)} className="w-full mt-2 text-gray-400 hover:text-white">Cancel</button>
-                  </div>
+                            </span>
+                        </motion.button>
+                        <motion.button 
+                          onClick={() => setShowManual(false)} 
+                          className="w-full text-gray-400 hover:text-white transition-colors duration-200"
+                          whileHover={{ scale: 1.02 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.4, delay: 0.5 }}
+                        >
+                          Cancel
+                        </motion.button>
+                  </motion.div>
               ) : (
-                <p>Scan an item or upload a photo to begin classification.</p>
+                <motion.p
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Scan an item or upload a photo to begin classification.
+                </motion.p>
               )}
-            </div>
-          ) : null}
-        </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </>
   );
